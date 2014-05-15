@@ -1,0 +1,109 @@
+newmtl Buttons
+Ka 0 0 0
+Kd 0.117647 0.117647 0.117647
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl Cable
+Ka 0 0 0
+Kd 0.752941 0.752941 0.752941
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl Disk_Drive
+Ka 0 0 0
+Kd 0.67451 0.67451 0.67451
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl HDMI
+Ka 0 0 0
+Kd 0.156863 0.156863 0.156863
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl Hull
+Ka 0 0 0
+Kd 0.501961 0.501961 0.501961
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl Letters
+Ka 0 0 0
+Kd 0.752941 0.752941 0.752941
+Ks 0.4 0.4 0.4
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl R
+Ka 0 0 0
+Kd 0.501961 0 0
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl Screen
+Ka 0 0 0
+Kd 0 0 0
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+map_Kd Forest Image.jpg
+
+newmtl Screen_Edge
+Ka 0 0 0
+Kd 0.160784 0.160784 0.160784
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl Skin
+Ka 0 0 0
+Kd 0.117647 0.117647 0.117647
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl W
+Ka 0 0 0
+Kd 1 1 1
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+
+newmtl Y
+Ka 0 0 0
+Kd 1 1 0
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>3D room</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				color: #fff;
+				position: absolute;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				z-index: 100;
+				display:block;
+			}
+			#info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
+		</style>
+	</head>
+
+	<body>
+		
+		<script src="build/three.min.js"></script>
+		<script src="js/loaders/OBJLoader.js"></script>
+		<script src="js/controls/FirstPersonControls.js"></script>
+		<script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+		
+		<!--video id="video" autoplay style="display:none">
+			<source src="video/GOT.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+			<source src="video/GOT.ogv" type='video/ogg; codecs="theora, vorbis"'>
+		</video-->
+		<script src="js/libs/tween.min.js"></script>
+		<script>
+			var container, renderer;
+			var camera, scene, projector;
+			var mouseX, mouseY, draggable;
+			//objects in the scene
+			var walls, furniture, interactiveObj = [];
+			var desk, television, tvcase, sofa, chair, door, book, pen;
+			var wallWidth = 1000;
+			
+			var video, tvImage,imageContext;
+			var screenTexture, tvMaterial;
+			var clock = new THREE.Clock();
+			init();
+			animate();
+			
+			function init(){
+				container = document.createElement('div');
+				document.body.appendChild(container);
+				
+				camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+				camera.position.set(0, -wallWidth/2 + 10, 10);
+				camera.lookAt( new THREE.Vector3(10,10,10));
+				
+				/*controls = new THREE.FirstPersonControls( camera );
+
+				controls.movementSpeed = 1000;
+				controls.lookSpeed = 0.125;
+				controls.lookVertical = true;*/
+				
+				
+				
+				
+				
+				scene = new THREE.Scene();
+				projector = new THREE.Projector();
+				
+				
+				var ambient = new THREE.AmbientLight(0x666666);
+				scene.add(ambient);
+				
+				var directionalLight = new THREE.DirectionalLight(0xffffff);
+				directionalLight.position.set( 0, 10, 10 ).normalize();
+				directionalLight.castShadow = true;
+				directionalLight.shadowMapWidth = 2048;
+				directionalLight.shadowMapHeight = 2048;
+				scene.add( directionalLight );
+				
+				
+				//ground
+				walls = new THREE.Object3D();
+			
+				
+				var groundMat = new THREE.MeshPhongMaterial({ambient:0xffffff, color:0xff33ff, specular: 0x000011});
+				var groundGeo = new THREE.PlaneGeometry(wallWidth, wallWidth);
+				
+				var wallTexture = new THREE.MeshBasicMaterial({
+					map:THREE.ImageUtils.loadTexture('textures/walls/rainbow.jpg')
+				});
+				wallTexture.map.needsUpdate = true;
+				var floorTexture = new THREE.MeshBasicMaterial({
+					map:THREE.ImageUtils.loadTexture('textures/walls/floor.jpg')
+				});
+				floorTexture.map.needsUpdate = true;
+				
+				var ground = new THREE.Mesh(groundGeo, floorTexture);
+				ground.overdraw = true;
+				ground.position.set(0, -wallWidth, 0);
+				ground.rotation.x = -Math.PI/2;
+				walls.add(ground);
+				
+				var wallleft = new THREE.Mesh(groundGeo, wallTexture);
+				wallleft.overdraw = true;
+				wallleft.position.set(-wallWidth/2, -wallWidth/2, 0);
+				wallleft.rotation.y = Math.PI/2;
+				walls.add(wallleft);
+				
+				var wallright = new THREE.Mesh(groundGeo, wallTexture);
+				wallright.overdraw = true;
+				wallright.position.set(wallWidth/2, -wallWidth/2, 0);
+				wallright.rotation.y = -Math.PI/2;
+				walls.add(wallright);
+				
+				var wallback = new THREE.Mesh(groundGeo, wallTexture);
+				wallback.overdraw = true;
+				wallback.position.set(0, -wallWidth/2, -wallWidth/2);
+				walls.add(wallback);
+				
+				var wallfront = new THREE.Mesh(groundGeo, wallTexture);
+				wallfront.overdraw = true;
+				wallfront.position.set(0, -wallWidth/2, wallWidth/2);
+				wallfront.rotation.y = -Math.PI;
+				walls.add(wallfront);
+				
+		/*		var ceiling = new THREE.Mesh(groundGeo, groundMat);
+				ceiling.position.set(0, 0, 0);
+				ceiling.rotation.x = Math.PI/2;
+				walss.add(ceiling);*/
+				
+				
+				
+				furniture = new THREE.Object3D();
+				
+				//desk
+				var bookcaseTexture = new THREE.Texture();
+				var loader = new THREE.ImageLoader();
+				loader.addEventListener( 'load', function ( event ) {
+
+					bookcaseTexture.image = event.content;
+					bookcaseTexture.needsUpdate = true;
+
+				} );
+				loader.load( 'textures/Wood.jpg' );
+				
+				var loader = new THREE.OBJLoader();
+				loader.addEventListener('load', function(event){
+					desk = event.content;
+					for ( var i = 0, l = desk.children.length; i < l; i ++ ) {
+
+						desk.children[ i ].material.map = bookcaseTexture;
+
+					}
+					desk.position.set(wallWidth/2-150,-wallWidth-5, -wallWidth/2 + 160);
+					desk.scale.set(80, 80, 80);
+					walls.add(desk);
+					
+				});
+				loader.load('obj/Desk.obj');
+				
+				//tv case
+				var tvcaseTexture = new THREE.Texture();
+				var loader = new THREE.ImageLoader();
+				loader.addEventListener( 'load', function ( event ) {
+
+					tvcaseTexture.image = event.content;
+					tvcaseTexture.needsUpdate = true;
+
+				} );
+				loader.load( 'textures/platinum.jpg' );
+				
+				var loader = new THREE.OBJLoader();
+				loader.addEventListener('load', function(event){
+					tvcase = event.content;
+					for ( var i = 0, l = tvcase.children.length; i < l; i ++ ) {
+
+						tvcase.children[ i ].material.map = tvcaseTexture;
+
+					}
+					tvcase.position.set(-wallWidth/2+90,-wallWidth-5, 0);
+					tvcase.scale.set(2, 2, 2);
+					walls.add(tvcase);
+					
+				});
+				loader.load('obj/PP_steel_podium_platinum.obj');
+				
+				//tv
+				var tvTexture = new THREE.Texture();
+				var loader = new THREE.ImageLoader();
+				loader.addEventListener( 'load', function ( event ) {
+
+					tvTexture.image = event.content;
+					tvTexture.needsUpdate = true;
+
+				} );
+				loader.load( 'textures/Black.jpg' );
+				
+				var loader = new THREE.OBJLoader();
+				loader.addEventListener('load', function(event){
+					tv = event.content;
+					for ( var i = 0, l = tv.children.length; i < l; i ++ ) {
+
+						tv.children[ i ].material.map = tvTexture;
+
+					}
+					tv.position.set(-wallWidth/2+90,-wallWidth+20, 0);
+					tv.rotation.set(0,Math.PI/2, 0);
+					tv.scale.set(50, 50, 50);
+					walls.add(tv);
+					
+				});
+				loader.load('obj/HDTV OBJ.obj');
+				
+				
+				//tvScreen
+			/*	video = document.getElementById( 'video' );
+				tvImage = document.createElement('canvas');
+				tvImage.crossOrigin = "anonymous";
+				tvImage.width = 480;
+				tvImage.height = 204;
+				
+				
+				imageContext = tvImage.getContext('2d');
+				imageContext.fillStyle='#000000';
+				imageContext.fillRect(0,0,480,204);
+				
+				screenTexture = new THREE.Texture(tvImage);
+				screenTexture.minFilter = THREE.LinearFilter;
+				screenTexture.maxFilter = THREE.LinearFilter;
+				
+				tvMaterial = new THREE.MeshBasicMaterial( { map: screenTexture, overdraw: true } );
+				
+				var screenPlane = new THREE.PlaneGeometry(480, 204, 4, 4);
+				var mesh = new THREE.Mesh(screenPlane, tvMaterial);
+				mesh.position.set(-wallWidth/2+90,-wallWidth+220, 0);
+				mesh.rotation.set(0,Math.PI/2, 0);
+				
+				walls.add(mesh);*/
+				//sofa
+				var sofaTexture = new THREE.Texture();
+				var loader = new THREE.ImageLoader();
+				loader.addEventListener( 'load', function ( event ) {
+
+					sofaTexture.image = event.content;
+					sofaTexture.needsUpdate = true;
+
+				} );
+				loader.load( 'textures/Red.jpg' );
+				
+				var loader = new THREE.OBJLoader();
+				loader.addEventListener('load', function(event){
+					sofa = event.content;
+					for ( var i = 0, l = sofa.children.length; i < l; i ++ ) {
+
+						sofa.children[ i ].material.map = sofaTexture;
+
+					}
+					sofa.position.set(0,-wallWidth+20, -150);
+					sofa.rotation.set(0,-Math.PI/2, 0);
+					sofa.scale.set(1, 1, 1);
+					walls.add(sofa);
+					
+				});
+				loader.load('obj/Sofa_OBJ.obj');
+				
+				//chair
+				var chairTexture = new THREE.Texture();
+				var loader = new THREE.ImageLoader();
+				loader.addEventListener( 'load', function ( event ) {
+
+					chairTexture.image = event.content;
+					chairTexture.needsUpdate = true;
+
+				} );
+				loader.load( 'textures/grey.jpg' );
+				
+				var loader = new THREE.OBJLoader();
+				loader.addEventListener('load', function(event){
+					chair = event.content;
+					for ( var i = 0, l = chair.children.length; i < l; i ++ ) {
+
+						chair.children[ i ].material.map = chairTexture;
+
+					}
+					chair.position.set(300,-wallWidth, -300);
+					chair.rotation.set(0,-Math.PI/2, 0);
+					chair.scale.set(2, 2, 2);
+					walls.add(chair);
+					
+				});
+				loader.load('obj/ferrera.obj');
+				
+				//door
+				var doorTexture = new THREE.Texture();
+				var loader = new THREE.ImageLoader();
+				loader.addEventListener( 'load', function ( event ) {
+
+					doorTexture.image = event.content;
+					doorTexture.needsUpdate = true;
+
+				} );
+				loader.load( 'textures/InteriorDoor_Diffuce.jpg' );
+				
+				var loader = new THREE.OBJLoader();
+				loader.addEventListener('load', function(event){
+					door = event.content;
+					for ( var i = 0, l = door.children.length; i < l; i ++ ) {
+
+						door.children[ i ].material.map = doorTexture;
+
+					}
+					door.position.set(wallWidth/2,-wallWidth, wallWidth/2-150);
+					door.rotation.set(0,Math.PI/2, 0);
+					door.scale.set(5, 5, 5);
+					walls.add(door);
+					
+				});
+				loader.load('obj/InteriorDoor.obj');
+				
+				//book
+				var bookTexture = new THREE.Texture();
+				var loader = new THREE.ImageLoader();
+				loader.addEventListener( 'load', function ( event ) {
+
+					bookTexture.image = event.content;
+					bookTexture.needsUpdate = true;
+
+				} );
+				loader.load( 'textures/books_texture.jpg');
+				
+				var loader = new THREE.OBJLoader();
+				loader.addEventListener( 'load', function ( event ) {
+					book = event.content;
+					for ( var i = 0, l = book.children.length; i < l; i ++ ) {
+
+						book.children[ i ].material.map = bookTexture;
+
+					}
+					book.position.set(wallWidth/2-130,-wallWidth+150, -wallWidth/2 + 160);
+					book.rotation.set(0,Math.PI/2, 0);
+					book.scale.set(0.5, 0.5, 0.5);
+					
+					interactiveObj.push(book);
+					walls.add(book);
+				});
+				loader.load( 'obj/books.obj');
+				
+				
+				//pen
+				var penTexture = new THREE.Texture();
+				var loader = new THREE.ImageLoader();
+				loader.addEventListener( 'load', function ( event ) {
+
+					penTexture.image = event.content;
+					penTexture.needsUpdate = true;
+
+				} );
+				loader.load( 'textures/as_creative_kit_lwf.jpg');
+				
+				var loader = new THREE.OBJLoader();
+				loader.addEventListener( 'load', function ( event ) {
+					var object = event.content;
+					object.children[0].material.map = penTexture;
+					
+					pen = new THREE.Mesh(object.children[0].geometry,  object.children[0].material);
+					/*for ( var i = 0, l = pen.children.length; i < l; i ++ ) {
+
+						pen.children[ i ].material.map = penTexture;
+
+					}*/
+					pen.position.set(wallWidth/2-100,-wallWidth+150, -wallWidth/2 + 200);
+					pen.rotation.set(0,Math.PI/2, 0);
+					pen.scale.set(5, 5, 5);
+					
+					interactiveObj.push(pen);
+					walls.add(pen);
+				});
+				loader.load( 'obj/as_creative_kit.obj');
+				//scene.add(furniture);
+				
+				scene.add(walls);
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.shadowMapEnabled = true;
+				container.appendChild( renderer.domElement );
+				
+				//IE, Chrome, Safari, Opera
+				document.addEventListener('mousewheel',onDocumentMouseWheel, false);
+				//Firefox
+				document.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				
+				document.addEventListener('mousedown', onDocumentMouseDown, false);
+				
+				document.addEventListener('mouseup', onDocumentMouseUp, false);
+				window.addEventListener( 'resize', onWindowResize, false );
+			}
+			
+			
+			
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+
+			}
+			
+			function render() {
+				
+				//camera.lookAt( scene.position );
+				camera.lookAt(new THREE.Vector3(0,-wallWidth/2 +10,10));
+				//controls.update( clock.getDelta() );
+				
+				/*if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
+
+					imageContext.drawImage( video, 0, 0 );
+
+					if ( screenTexture ) screenTexture.needsUpdate = true;
+						
+				}*/
+				
+				renderer.render( scene, camera );
+
+			}
+			
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+		
+				//controls.handleResize();
+
+			}
+			
+			function onDocumentMouseDown(event){
+				draggable = true;
+				event.preventDefault();
+				var vector = new THREE.Vector3(( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1, 0.5 );
+				projector.unprojectVector( vector, camera );
+				var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+
+				var intersects = ray.intersectObjects(interactiveObj);
+				console.log("intersects:" + intersects);
+				if ( intersects.length > 0 ) {
+						if(intersects[0].object == book)
+							intersects[0].object.scale = new THREE.Vector3(0.1, 0.1, 0.1);	
+						else if(intersects[0].object == pen)
+							intersects[0].object.scale = new THREE.Vector3(10, 10, 10);
+						draggable = false;
+				}
+			}
+			
+			function onDocumentMouseUp(event){
+				draggable = false;
+				pen.scale.set(5, 5, 5);
+				book.scale.set(0.5, 0.5, 0.5);
+				
+			}
+			
+
+			function onDocumentMouseMove( event ) {
+				if(draggable){
+					if(mouseX != 0 && mouseY != 0){
+						deltaX =  event.clientX - mouseX;
+						deltaY =  event.clientY - mouseY;
+						walls.rotation.y += deltaX * 0.01;
+						walls.rotation.x += deltaY * 0.01;
+					}
+				}
+				mouseX = event.clientX;
+				mouseY = event.clientY;
+				render();
+
+			}
+			
+			function onDocumentMouseWheel( event ) {
+				mouseDelta = (-event.wheelDeltaY|| event.detail);
+				camera.position.z += mouseDelta * 10 ;
+				render();
+			}
+
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,38 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 5 5.0.5.1846 Release
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl drs001_wood__Vra
+Ka 0 0 0
+Kd 1 1 1
+Ks 0.898039 0.898039 0.898039
+illum 2
+Ns 8
+map_Kd DRS00101.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl drs001_wood2__Vr
+Ka 0 0 0
+Kd 1 1 1
+Ks 0.898039 0.898039 0.898039
+illum 2
+Ns 8
+map_Kd DRS00102.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
